@@ -1,0 +1,9 @@
+.fuse*
+*.pyc
+__*__
+.env
+.env.*
+!.env.example
+venv/
+.venv/
+__pycache__/
