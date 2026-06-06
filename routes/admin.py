@@ -28,13 +28,13 @@ def signin():
 	
 	if request.method == 'POST':
 		_form = request.form
-		email = str(_form["email"])
-		password = str(_form["password"])
+		email = clean_text(_form["email"])
+		password = clean_text(_form["password"])
 
 		if len(email)<1 or len(password)<1:
 			return render_template('admin/signin.html', error="Email and password are required")
 
-		d = admin_manager.signin(email, hash(password))
+		d = admin_manager.signin(email, password)
 
 		if d and len(d)>0:
 			session['admin'] = int(d["id"])
@@ -76,7 +76,7 @@ def books():
 	admin = admin_manager.get(id)
 	mybooks = book_manager.list(availability=0)
 
-	return render_template('books/views.html', g=g, books=mybooks, admin=admin)
+	return render_template('books/views.html', g=g, books=mybooks, admin=admin, msg=request.args.get("msg"), error=request.args.get("error"))
 
 @admin_view.route('/books/<int:id>')
 @admin_manager.admin.login_required
@@ -100,8 +100,20 @@ def view_book(id):
 @admin_manager.admin.login_required
 def book_add():
 	admin_manager.admin.set_session(session, g)
-	
-	return render_template('books/add.html', g=g)
+
+	if request.method == 'POST':
+		book, error = parse_book_form(request.form)
+		if error:
+			return render_template('books/add.html', g=g, error=error, book=request.form)
+
+		existing = book_manager.search(book["name"], 0)
+		if any(clean_text(item["name"]).lower() == book["name"].lower() for item in existing):
+			return render_template('books/add.html', g=g, error="A book with this title already exists.", book=request.form)
+
+		book_manager.add(book)
+		return redirect('/admin/books/?msg=Book added successfully')
+
+	return render_template('books/add.html', g=g, book={})
 
 
 @admin_view.route('/books/edit/<int:id>', methods=['GET', 'POST'])
@@ -112,8 +124,15 @@ def book_edit(id):
 	if id != None:
 		b = book_manager.getBook(id)
 
-		if b and len(b) <1:
-			return render_template('edit.html', error="No book found!")
+		if not b:
+			return redirect('/admin/books/?error=No book found')
+
+		if request.method == 'POST':
+			book, error = parse_book_form(request.form)
+			if error:
+				return render_template("books/edit.html", book=b, g=g, error=error)
+			book_manager.update(id, book)
+			return redirect('/admin/books/?msg=Book updated successfully')
 
 		return render_template("books/edit.html", book=b, g=g)
 	
@@ -122,12 +141,20 @@ def book_edit(id):
 @admin_view.route('/books/delete/<int:id>', methods=['GET'])
 @admin_manager.admin.login_required
 def book_delete(id):
+	admin_manager.admin.set_session(session, g)
 	id = int(id)
 
 	if id is not None:
-		book_manager.delete(id)
+		book = book_manager.getBook(id)
+		if not book:
+			return redirect('/admin/books/?error=Book does not exist')
+		try:
+			book_manager.delete(id)
+		except Exception:
+			books = book_manager.list(availability=0)
+			return render_template('books/views.html', g=g, books=books, error="Delete error while removing book.")
 	
-	return redirect('/admin/books/')
+	return redirect('/admin/books/?msg=Book deleted successfully')
 
 
 @admin_view.route('/books/search', methods=['GET'])
@@ -137,10 +164,10 @@ def search():
 	if "keyword" not in request.args:
 		return render_template("books/view.html")
 
-	keyword = request.args["keyword"]
+	keyword = clean_text(request.args["keyword"])
 
 	if len(keyword)<1:
-		return redirect('/admin/books')
+		return redirect('/admin/books/?error=Please enter a search keyword')
 
 	id = int(admin_manager.admin.uid())
 	admin = admin_manager.get(id)
@@ -150,5 +177,30 @@ def search():
 	if len(d) >0:
 		return render_template("books/views.html", search=True, books=d, count=len(d), keyword=escape(keyword), g=g, admin=admin)
 
-	return render_template('books/views.html', error="No books found!", keyword=escape(keyword))
+	return render_template('books/views.html', error="No books found!", keyword=escape(keyword), g=g, admin=admin)
+
+
+def parse_book_form(form):
+	title = clean_text(form.get("title"))
+	description = clean_text(form.get("desc"))
+	author = clean_text(form.get("author")) or "Unknown"
+	edition = clean_text(form.get("edition")) or "1"
+	qty_raw = clean_text(form.get("qty"))
+	availability = 1 if form.get("available") or form.get("avaliable") else 0
+
+	if not title:
+		return None, "Title is required."
+	if not description:
+		return None, "Description is required."
+	if not qty_raw.isdigit() or int(qty_raw) < 0:
+		return None, "Quantity must be a positive number or zero."
+
+	return {
+		"name": title,
+		"desc": description,
+		"author": author,
+		"edition": edition,
+		"count": int(qty_raw),
+		"availability": availability,
+	}, None
 

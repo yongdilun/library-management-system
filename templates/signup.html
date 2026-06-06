@@ -9,11 +9,11 @@
 {% endblock %}
 
 {% block content %}
-	<div class="container d-flex h-75">
-	    <div class="row justify-content-center align-self-center welcome">
-			<h4>SIGNUP</h4>
-
-			<div style="width:90%">
+	<div class="auth-wrap">
+		<div class="auth-card">
+			<span class="eyebrow">NEW MEMBER</span>
+			<h2>Create your library account.</h2>
+			<p class="support-copy">Reserve books, track your account, and keep your profile current.</p>
 			{% if msg %}
 				<div class="alert alert-success">
 					{{msg}}
@@ -39,10 +39,8 @@
 			    <input type="password" class="form-control" id="password" name="password" placeholder="Password">
 			  </div>
 
-			  <button type="submit" class="btn btn-primary">Signup</button>
-			  	<!-- <a style="margin-left: 10px" href="/signup">Or join us now!</a> -->
+			  <button type="submit" class="btn btn-primary btn-block">Signup</button>
 			</form>
-			</div>
-	    </div>
+		</div>
 	</div>
 {% endblock %}

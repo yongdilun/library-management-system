@@ -1,8 +1,15 @@
+import os
+
 from flask import Flask, g, escape, session, redirect, render_template, request, jsonify, Response
 from Misc.functions import *
 
 app = Flask(__name__)
-app.secret_key = '#$ab9&^BB00_.'
+app.secret_key = os.getenv("SECRET_KEY", "dev-only-change-this-secret")
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=os.getenv("SESSION_COOKIE_SECURE", "false").lower() == "true",
+)
 
 # Setting DAO Class
 from Models.DAO import DAO

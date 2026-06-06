@@ -6,14 +6,14 @@ class AdminDAO():
 		self.db.table = "admin"
 
 	def getById(self, id):
-		q = self.db.query("select * from @table where id='{}'".format(id))
+		q = self.db.query("select * from @table where id=%s", (id,))
 
 		user = q.fetchone()
 
 		return user
 
 	def getByEmail(self, email):
-		q = self.db.query("select * from @table where email='{}'".format(email))
+		q = self.db.query("select * from @table where email=%s", (email,))
 
 		user = q.fetchone()
 

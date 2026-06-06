@@ -23,13 +23,13 @@ def home():
 def signin():
 	if request.method == 'POST':
 		_form = request.form
-		email = str(_form["email"])
-		password = str(_form["password"])
+		email = clean_text(_form["email"])
+		password = clean_text(_form["password"])
 
 		if len(email)<1 or len(password)<1:
 			return render_template('signin.html', error="Email and password are required")
 
-		d = user_manager.signin(email, hash(password))
+		d = user_manager.signin(email, password)
 
 		if d and len(d)>0:
 			session['user'] = int(d['id'])
@@ -46,14 +46,18 @@ def signin():
 @user_manager.user.redirect_if_login
 def signup():
 	if request.method == 'POST':
-		name = request.form.get('name')
-		email = request.form.get('email')
-		password = request.form.get('password')
+		name = clean_text(request.form.get('name'))
+		email = clean_text(request.form.get('email'))
+		password = clean_text(request.form.get('password'))
 
 		if len(name) < 1 or len(email)<1 or len(password)<1:
 			return render_template('signup.html', error="All fields are required")
+		if not valid_email(email):
+			return render_template('signup.html', error="Please enter a valid email address")
+		if len(password) < 6:
+			return render_template('signup.html', error="Password must be at least 6 characters")
 
-		new_user = user_manager.signup(name, email, hash(password))
+		new_user = user_manager.signup(name, email, password)
 
 		if new_user == "already_exists":
 			return render_template('signup.html', error="User already exists with this email")
@@ -91,12 +95,25 @@ def update():
 	user_manager.user.set_session(session, g)
 	
 	_form = request.form
-	name = str(_form["name"])
-	email = str(_form["email"])
-	password = str(_form["password"])
-	bio = str(_form["bio"])
+	name = clean_text(_form["name"])
+	email = clean_text(_form["email"])
+	password = clean_text(_form["password"])
+	bio = clean_text(_form["bio"])
 
-	user_manager.update(name, email, hash(password), bio, user_manager.user.uid())
+	if len(name) < 1:
+		d = user_manager.get(user_manager.user.uid())
+		mybooks = user_manager.getBooksList(user_manager.user.uid())
+		return render_template("profile.html", user=d, books=mybooks, g=g, error="Name is required")
+	if not valid_email(email):
+		d = user_manager.get(user_manager.user.uid())
+		mybooks = user_manager.getBooksList(user_manager.user.uid())
+		return render_template("profile.html", user=d, books=mybooks, g=g, error="Please enter a valid email address")
+	if password and len(password) < 6:
+		d = user_manager.get(user_manager.user.uid())
+		mybooks = user_manager.getBooksList(user_manager.user.uid())
+		return render_template("profile.html", user=d, books=mybooks, g=g, error="Password must be at least 6 characters")
+
+	user_manager.update(name, email, password, bio, user_manager.user.uid())
 
 	flash('Your info has been updated!')
 	return redirect("/user/")

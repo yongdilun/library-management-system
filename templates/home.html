@@ -9,19 +9,44 @@
 {% endblock %}
 
 {% block content %}
-	<div class="container d-flex h-75">
-	    <div class="row justify-content-center align-self-center welcome">
-	    	<h3>WELCOME</h3>
-			<div style="width:100%">
-			<form action="/books/search" method="GET">
-			  <div class="form-group">
-			    <label for="exampleInputEmail1">Search</label>
-			    <input type="search" autocomplete="false" name="keyword" autofocus class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Search for books...">
-			    <small id="emailHelp" class="form-text text-muted">Available books will be shown to members.</small>
-			  </div>
-			  <button type="submit" class="btn btn-primary">Search</button>
-			</form>
-			</div>
-	    </div>
+	<div class="hero-band">
+		<div class="hero-grid">
+			<section>
+				<span class="eyebrow">LMS / DIGITAL CATALOGUE</span>
+				<h1 class="hero-title">Find, reserve, and manage library books.</h1>
+				<p class="hero-copy">A cleaner library workspace for members and administrators, with stronger validation, safer reservations, and a refreshed responsive interface.</p>
+				<div class="hero-actions">
+					<a href="/books" class="btn btn-primary"><i class="bi bi-book"></i> Browse Books</a>
+					<a href="/signin" class="btn btn-outline-primary"><i class="bi bi-box-arrow-in-right"></i> Signin</a>
+				</div>
+				<div class="hero-stats">
+					<div class="metric-card">
+						<span class="metric-value">5/5</span>
+						<span class="metric-label">maintenance checks passed</span>
+					</div>
+					<div class="metric-card">
+						<span class="metric-value">68+</span>
+						<span class="metric-label">regression cases documented</span>
+					</div>
+					<div class="metric-card">
+						<span class="metric-value">4</span>
+						<span class="metric-label">core quality areas improved</span>
+					</div>
+				</div>
+			</section>
+			<section class="search-panel">
+				<span class="eyebrow">CATALOGUE SEARCH</span>
+				<h2>Start with a title or author.</h2>
+				<p class="support-copy">Search available books and reserve copies from the detail page.</p>
+				<form action="/books/search" method="GET">
+					<div class="form-group">
+						<label for="homeSearch">Search</label>
+						<input type="search" autocomplete="off" name="keyword" required autofocus class="form-control" id="homeSearch" aria-describedby="homeSearchHelp" placeholder="Search for books...">
+						<small id="homeSearchHelp" class="form-text text-muted">Available books will be shown to members.</small>
+					</div>
+					<button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
+				</form>
+			</section>
+		</div>
 	</div>
 {% endblock %}

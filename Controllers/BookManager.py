@@ -33,6 +33,12 @@ class BookManager():
 
 		return books
 
+	def add(self, book):
+		return self.dao.add(book)
+
+	def update(self, id, book):
+		return self.dao.update(id, book)
+
 	def getUserBooks(self, user_id):
 		books = self.dao.getBooksByUser(user_id)
 

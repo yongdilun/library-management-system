@@ -9,19 +9,30 @@
 {% endblock %}
 
 {% block content %}
-	<div class="container d-flex h-75">
-	    <div class="row justify-content-center align-self-center welcome">
-	    	<h3>WELCOME</h3>
-			<div style="width:100%">
-			<form action="/admin/books/search" method="GET">
-			  <div class="form-group">
-			    <label for="exampleInputEmail1">Search</label>
-			    <input type="search" name="keyword" autofocus class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Search for books...">
-			    <small id="emailHelp" class="form-text text-muted">Available books will be shown to members.</small>
-			  </div>
-			  <button type="submit" class="btn btn-primary">Search</button>
-			</form>
-			</div>
-	    </div>
+	<div class="hero-band">
+		<div class="hero-grid">
+			<section>
+				<span class="eyebrow">ADMIN DASHBOARD</span>
+				<h1 class="hero-title">Maintain the library catalogue.</h1>
+				<p class="hero-copy">Use the admin console to add, edit, delete, and validate book inventory records before they appear to members.</p>
+				<div class="hero-actions">
+					<a href="/admin/books" class="btn btn-primary"><i class="bi bi-view-list"></i> View Books</a>
+					<a href="/admin/books/add" class="btn btn-outline-primary"><i class="bi bi-journal-plus"></i> Add Book</a>
+				</div>
+			</section>
+			<section class="search-panel">
+				<span class="eyebrow">INVENTORY SEARCH</span>
+				<h2>Find a book record.</h2>
+				<p class="support-copy">Search the administrative catalogue by title or author.</p>
+				<form action="/admin/books/search" method="GET">
+				  <div class="form-group">
+				    <label for="adminSearch">Search</label>
+				    <input type="search" name="keyword" required autofocus class="form-control" id="adminSearch" aria-describedby="emailHelp" placeholder="Search for books...">
+				    <small id="emailHelp" class="form-text text-muted">Available books will be shown to members.</small>
+				  </div>
+				  <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
+				</form>
+			</section>
+		</div>
 	</div>
 {% endblock %}

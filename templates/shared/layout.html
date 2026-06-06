@@ -1,6 +1,4 @@
 <html>
-<!-- What the page is called in the tab bar  -->
-<!-- We will add out stylsheet here later -->
 <head>
 	{%block head %}
 	<meta charset="utf-8">
@@ -17,10 +15,13 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     {% endblock %}
 </head>
-<!-- Put some text on the page -->
 <body {{"class=home" if g and g.bg==1 else ""}}>
-	<div class="container-fluid">
-		<div class="navbar justify-content-end mb-5">
+	<div class="container-fluid app-shell">
+		<div class="navbar">
+			<a class="navbar-brand" href="/">
+				<span class="brand-mark">L</span>
+				<span>Library Management</span>
+			</a>
 			<ul class="nav">
 			  <li class="nav-item">
 			    <a class="nav-link active" href="/">Home</a>
@@ -33,14 +34,14 @@
 				    <a class="nav-link" href="/user/">Profile</a>
 				  </li>
 				  <li class="nav-item">
-				    <a class="nav-link" href="/signout/">Signout</a>
+				    <a class="nav-link nav-cta-outline" href="/signout/">Signout</a>
 				  </li>
 			  {% else %}
 				  <li class="nav-item">
-				    <a class="nav-link" href="/signin">Signin</a>
+				    <a class="nav-link nav-cta-outline" href="/signin">Signin</a>
 				  </li>
 				  <li class="nav-item">
-				    <a class="nav-link" href="/signup">Signup</a>
+				    <a class="nav-link nav-cta" href="/signup">Signup</a>
 				  </li>
 			  {% endif %}
 			</ul>

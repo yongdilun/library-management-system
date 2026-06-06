@@ -3,58 +3,100 @@
 {% block title %}Manage Books - View {% endblock %}
 
 {% block content %}
-	<div class="container">	
-		<div style="width:100%; margin-top: 3em;">
+	<div>
+		<header class="page-header">
+			<div>
+				<span class="eyebrow">ADMIN INVENTORY</span>
+				<h1>Manage Books</h1>
+				<p>Review the catalogue, update stock counts, and remove records with confirmation.</p>
+			</div>
+			<a href="/admin/books/add" class="btn btn-primary"><i class="bi bi-journal-plus"></i> Add Book</a>
+		</header>
+
+		<div class="toolbar-card">
 			{% if msg %}
 				<div class="alert alert-success">{{msg}}</div>
 			{% endif %}
+			{% if error %}
+				<div class="alert alert-danger">{{error}}</div>
+			{% endif %}
 			<form action="/admin/books/search" method="GET">
 			  <div class="form-group">
-			    <div style="width: 100%">
-			    <div style="width: 90%; display: inline-block;">
-			    <input type="search" name="keyword" autofocus class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" value="{{keyword}}" placeholder="Search for books...">
-			    </div>
-				<button type="submit" style="margin-left: 5px;" class="btn btn-primary">Search</button>
+			    <div class="search-row">
+			    	<input type="search" name="keyword" autofocus class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" value="{{keyword}}" placeholder="Search for books...">
+					<button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
 			    </div>
 			  </div>
 			</form>
 		</div>
 
 		<div>
-			<h2>Manage Books</h2>
 			{% if books %}
-				{% for book in books %}
-				<div class="card book">
-				  <img src="/static/images/bg.jpg" class="card-img-top" alt="{{book[1]}}">
-				  <div class="card-body">
-				    <h5 class="card-title"><a href="{{book['id']}}">{{book['name']}}</a></h5>
-				    {% if book["availability"] < 1 %}
-				    	<span class="badge badge-warning" style="margin-bottom: 5px;">Assigned</span>
-				    {% endif %}
-				    <p class="card-text bookdesc">{{book["desc"]}}</p>
-
-				    <p class="card-text">
-				    <span class="badge badge-{{ 'success' if book['availability'] > 0 else 'danger' }}" style="margin-bottom: 5px;">
-				    	{% if book["count"] > 0%}
-				    	  Books Left: {{book['count']}}
-				    	{% else %}
-				    	  All gone
-				    	{% endif %}
-				    </span>
-					</p>
-					<form method="get" action="">
-						<a href="edit/{{book['id']}}" class="btn btn-outline-primary">
-							<i class="bi bi-pen-fill"></i> Edit
-						</a>
-						<a href="delete/{{book['id']}}" class="btn btn-outline-danger">
-							<i class="bi bi-trash"></i> Delete
-						</a>
-					</form>
-				  </div>
+			<div class="table-panel">
+				<div class="table-panel-header">
+					<div>
+						<span class="eyebrow">CATALOGUE TABLE</span>
+						<h2>Inventory records</h2>
+					</div>
+					<span class="badge badge-secondary">{{books|length}} records</span>
 				</div>
+				<div class="table-responsive">
+				<table class="table lms-table">
+					<thead>
+						<tr>
+							<th>Book</th>
+							<th>Author</th>
+							<th>Status</th>
+							<th>Quantity</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+				{% for book in books %}
+					<tr>
+						<td>
+							<a href="{{book['id']}}"><strong>{{book['name']}}</strong></a>
+							<div class="text-muted">{{book["desc"]}}</div>
+						</td>
+						<td>{{book['author']}}</td>
+						<td>
+							{% if book["availability"] < 1 %}
+								<span class="badge badge-warning">Assigned</span>
+							{% else %}
+								<span class="badge badge-primary">Available</span>
+							{% endif %}
+						</td>
+						<td>
+							<span class="badge badge-{{ 'success' if book['count'] > 0 else 'secondary' }}">
+							{% if book["count"] > 0%}
+								Books Left: {{book['count']}}
+							{% else %}
+								All gone
+							{% endif %}
+							</span>
+						</td>
+						<td>
+							<div class="admin-actions">
+								<a href="edit/{{book['id']}}" class="btn btn-outline-primary">
+									<i class="bi bi-pen-fill"></i> Edit
+								</a>
+								<a href="delete/{{book['id']}}" onclick="return confirm('Delete {{book['name']}}? Press OK to delete or Cancel to keep it.');" class="btn btn-outline-danger">
+									<i class="bi bi-trash"></i> Delete
+								</a>
+							</div>
+						</td>
+					</tr>
 				{% endfor %}
+					</tbody>
+				</table>
+				</div>
+			</div>
 			{% else %}
-				<p>No Books In Stash!</p>
+				<div class="empty-state">
+					<i class="bi bi-book"></i>
+					<h4>No Books In Stash!</h4>
+					<p>Add the first book record to begin inventory management.</p>
+				</div>
 			{% endif %}	
 		</div>
 	</div>

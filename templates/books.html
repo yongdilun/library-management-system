@@ -9,36 +9,56 @@
 {% endblock %}
 
 {% block content %}
-	<div class="container h-75">	
-		<div style="width:100%; margin-top: 3em;">
+	<div>
+		<header class="page-header">
+			<div>
+				<span class="eyebrow">BOOK CATALOGUE</span>
+				<h1>Browse available books.</h1>
+				<p>Search by title or author, review stock availability, and reserve a copy from the book details workflow.</p>
+			</div>
+			<a href="/" class="btn btn-outline-primary"><i class="bi bi-house"></i> Home</a>
+		</header>
+
+		<div class="toolbar-card">
 			{% if msg %}
 				<div class="alert alert-success">{{msg}}</div>
 			{% endif %}
+			{% if error %}
+				<div class="alert alert-danger">{{error}}</div>
+			{% endif %}
 			<form action="/books/search" method="GET">
 			  <div class="form-group">
-			    <div style="width: 100%">
-			    <div style="width: 90%; display: inline-block;">
-			    <input type="search" name="keyword" autofocus class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" value="{{keyword}}" placeholder="Search for books...">
-			    </div>
-				<button type="submit" style="margin-left: 5px;" class="btn btn-primary">Search</button>
+			    <div class="search-row">
+			    	<input type="search" name="keyword" autofocus class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" value="{{keyword}}" placeholder="Search for books...">
+					<button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
 			    </div>
 			  </div>
 			</form>
 		</div>
 
-		<div style="width:100%; margin-top: 3em;">
+		<div>
 			{% if books %}
 				{% if search %}
-				<h4>Search Found ({{count}})</h4>
+				<div class="page-header">
+					<div>
+						<span class="eyebrow">SEARCH RESULT</span>
+						<h1>Search Found ({{count}})</h1>
+					</div>
+				</div>
 				{% endif %}
+				<div class="book-grid">
 				{% for book in books %}
-				<div class="card book">
-				  <img src="/static/images/bg.jpg" class="card-img-top" alt="{{book[1]}}">
+				<div class="book-card">
+				  <div class="book-cover" role="img" aria-label="{{book['name']}}">
+					<i class="bi bi-book book-cover-icon"></i>
+					<span class="book-cover-code">LMS/{{book['id']}}</span>
+				  </div>
 				  <div class="card-body">
 				    <h5 class="card-title"><a href="/books/{{book['id']}}">{{book['name']}}</a></h5>
 				    {% if book['availability'] < 1 %}
 				    	<span class="badge badge-warning" style="margin-bottom: 5px;">Assigned</span>
 				    {% endif %}
+				    <p class="card-text mb-1">Author: <span class="font-weight-light">{{book['author']}}</span></p>
 				    <p class="card-text bookdesc">{{book['desc']}}</p>
 
 				    <p class="card-text">
@@ -51,15 +71,22 @@
 				    </span>
 					</p>
 
+				    <div class="book-actions">
 				    {% if book['count'] > 0 %}
 				    <a href="/books/add/{{book['id']}}" {{ 'disabled' if user_books!=None and str(book['id']) in user_books else '' }} class="btn btn-outline-warning {{ 'disabled' if str(book['id']) in user_books else '' }}"><i class="bi bi-journal-plus"></i> {{ 'Added' if str(book['id']) in user_books else 'Add' }}</a>
 				    {% endif %}
+					<a href="/books/{{book['id']}}" class="btn btn-outline-primary"><i class="bi bi-arrow-right"></i> Details</a>
+					</div>
 				  </div>
 				</div>
 				{% endfor %}
+				</div>
 			{% else %}
-				<h4>No Books Found!</h4>
-				<p>Please contact the librarian</p>
+				<div class="empty-state">
+					<i class="bi bi-book"></i>
+					<h4>No Books Found!</h4>
+					<p>Please contact the librarian</p>
+				</div>
 			{% endif %}
 		</div>
 	</div>

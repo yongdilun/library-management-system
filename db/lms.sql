@@ -130,7 +130,10 @@ ALTER TABLE `books`
 -- Indexes for table `reserve`
 --
 ALTER TABLE `reserve`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_user_book_reservation` (`user_id`, `book_id`),
+  ADD KEY `idx_reserve_user_id` (`user_id`),
+  ADD KEY `idx_reserve_book_id` (`book_id`);
 
 --
 -- Indexes for table `users`
@@ -165,6 +168,13 @@ ALTER TABLE `reserve`
 --
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- Constraints for table `reserve`
+--
+ALTER TABLE `reserve`
+  ADD CONSTRAINT `fk_reserve_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_reserve_book` FOREIGN KEY (`book_id`) REFERENCES `books` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

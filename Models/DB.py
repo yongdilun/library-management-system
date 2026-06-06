@@ -42,15 +42,18 @@ class DB(object):
 	def cur(self):
 		return self.mysql.get_db().cursor()
 
-	def query(self, q):
+	def query(self, q, params=None):
 		h = self.cur()
 	
 		if (len(self.table)>0):
 			q = q.replace("@table", self.table)
 
-		h.execute(q)
+		h.execute(q, params)
 
 		return h
 
 	def commit(self):
 		self.query("COMMIT;")
+
+	def rollback(self):
+		self.query("ROLLBACK;")

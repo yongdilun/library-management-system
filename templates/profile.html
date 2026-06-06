@@ -3,7 +3,15 @@
 {% block title %}Profile - {{user['name']}} {% endblock %}
 
 {% block content %}
-	<div class="profile container">
+	<div class="profile">
+		<header class="page-header">
+			<div>
+				<span class="eyebrow">MEMBER PROFILE</span>
+				<h1>{{user['name']}}</h1>
+				<p>Review reserved books and maintain account information from one responsive workspace.</p>
+			</div>
+			<a href="/books" class="btn btn-primary"><i class="bi bi-book"></i> Browse Books</a>
+		</header>
 		{% with messages = get_flashed_messages() %}
 			{% if messages %}
 				<div class="alert alert-success">
@@ -13,17 +21,14 @@
 				</div>
 			{% endif %}
 		{% endwith %}
-		<div class="">
-
-            <div class="card-body">
-                <div class="row d-flex justify-content-between">
-                    <div class="col-md-4 pt-4 card" style="height: fit-content;">
-                        <div class="card-body">
+		{% if error %}
+			<div class="alert alert-danger">{{error}}</div>
+		{% endif %}
+		<div class="profile-layout">
+                    <aside class="profile-card">
                             <div class="form-group">
                                 <div class="profile-pic-div m-auto">
                                     <img src="/static/images/avatar.jpg" id="photo">
-                                    <!-- <input type="file" id="file">
-                                    <label for="file" id="uploadBtn" style="display: none;">Choose Photo</label> -->
 									<div class="text-center mt-4">{{user['name']}}</div>
                                 </div>
                             </div>
@@ -35,9 +40,8 @@
 							<p class="lead">Joined: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-activity" viewBox="0 0 16 16">
 								<path fill-rule="evenodd" d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2Z"/>
 							  </svg> {{ago(user['created_at'])}}</p>
-                        </div>
-                    </div>
-                    <div class="card col-md-7 mwrapper">
+                    </aside>
+                    <section class="profile-card mwrapper">
 
 						<ul class="nav nav-tabs" id="myTab" role="tablist">
 							<li class="nav-item">
@@ -51,45 +55,45 @@
 						  <div class="col-md-12 ">
 							<div class="tab-content" id="myTabContent">
 								<div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-								<div class="">
+								<div>
 									{% if books %}
-										<!-- <h2 class="text-center mt-4" style="margin-bottom: 0.5em;">Your Books</h2> -->
-										<div class="text-center mb-4 mt-4"><i class="text-center mt-4 bi-book" style="
-											font-size: 6em; "></i></div>
+										<div class="page-header mt-4">
+											<div>
+												<span class="eyebrow">RESERVATIONS</span>
+												<h1>Your Books</h1>
+											</div>
+										</div>
+										<div class="book-grid">
 										{% for book in books %}
-											<div class="card book">
-												<img src="/static/images/bg.jpg" class="card-img-top" alt="{{book[1]}}">
+											<div class="book-card">
+												<div class="book-cover" role="img" aria-label="{{book['name']}}">
+													<i class="bi bi-book book-cover-icon"></i>
+													<span class="book-cover-code">RES/{{book['id']}}</span>
+												</div>
 												<div class="card-body">
 				    								<h5 class="card-title"><a href="/books/{{book['id']}}">{{book['name']}}</a></h5>
 													{% if book['availability'] < 1 %}
 														<span class="badge badge-warning" style="margin-bottom: 5px;">Assigned</span>
 													{% endif %}
-													<!-- <p class="card-text bookdesc">{{book['desc']}}</p> -->
-
 													<p class="card-text">Author: <span class="font-weight-light">{{book['author']}}</span></p>
 												</div>
 											</div>
 										{% endfor %}
+										</div>
 										{% else %}
-											<div class="card bwrapper">
-												<div class="card-body">
-													<h4 class="text-center mt-4">Manage Books</h4>
-													<div class="text-center mb-4" style="margin-top: 21px !important;">
-														<!-- <i class="text-center mt-4 bi-book" style="font-size: 6em; "></i> -->
-														<svg xmlns="http://www.w3.org/2000/svg" width="6em" height="6em" fill="currentColor" class="bi bi-activity" viewBox="0 0 16 16">
-														<path fill-rule="evenodd" d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2Z"/>
-														</svg>
-													</div>
-													<p class="text-center mb-4">No Books You Reserved!</p>
-												</div>
+											<div class="empty-state">
+												<i class="bi bi-book"></i>
+												<h4>Manage Books</h4>
+												<p class="text-center mb-4">No Books You Reserved!</p>
 											</div>
 										{% endif %}	
 										</div>
 								</div>
 								<div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
 									<div class="card-body">
-										<h4 class="text-center mt-4">Manage Account</h4>
-										<p class="text-center mb-4">One Account For Everything</p>
+										<span class="eyebrow">ACCOUNT SETTINGS</span>
+										<h4 class="mt-2">Manage Account</h4>
+										<p class="support-copy">One Account For Everything</p>
 
 										<form method="POST" action="/user">
 											<div class="row">
@@ -127,10 +131,7 @@
 							</div>
 						  </div>
 
-                    </div>
-
-                </div>
-            </form>
+                    </section>
         </div>
 	</div>
 {% endblock %}

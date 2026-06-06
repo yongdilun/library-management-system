@@ -10,21 +10,21 @@ class UserDAO():
 		return users
 
 	def getById(self, id):
-		q = self.db.query("select * from @table where id='{}'".format(id))
+		q = self.db.query("select * from @table where id=%s", (id,))
 
 		user = q.fetchone()
 
 		return user
 
 	def getUsersByBook(self, book_id):
-		q = self.db.query("select * from @table LEFT JOIN reserve ON reserve.user_id = @table.id WHERE reserve.book_id={}".format(book_id))
+		q = self.db.query("select * from @table LEFT JOIN reserve ON reserve.user_id = @table.id WHERE reserve.book_id=%s", (book_id,))
 
 		user = q.fetchall()
 
 		return user
 
 	def getByEmail(self, email):
-		q = self.db.query("select * from @table where email='{}'".format(email))
+		q = self.db.query("select * from @table where email=%s", (email,))
 
 		user = q.fetchone()
 
@@ -35,7 +35,10 @@ class UserDAO():
 		email = user['email']
 		password = user['password']
 
-		q = self.db.query("INSERT INTO @table (name, email, password,bio,mob,`lock`) VALUES('{}', '{}', '{}','','','0');".format(name, email, password))
+		q = self.db.query(
+			"INSERT INTO @table (name, email, password,bio,mob,`lock`) VALUES(%s, %s, %s, '', '', 0)",
+			(name, email, password),
+		)
 		self.db.commit()
 		
 		return q
@@ -47,7 +50,10 @@ class UserDAO():
 		password = user['password']
 		bio = user['bio']
 
-		q = self.db.query("UPDATE @table SET name = '{}', email='{}', password='{}', bio='{}' WHERE id={}".format(name, email, password, bio, _id))
+		q = self.db.query(
+			"UPDATE @table SET name=%s, email=%s, password=%s, bio=%s WHERE id=%s",
+			(name, email, password, bio, _id),
+		)
 		self.db.commit()
 		
 		return q

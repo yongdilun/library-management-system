@@ -9,11 +9,11 @@
 {% endblock %}
 
 {% block content %}
-	<div class="container d-flex h-75">
-	    <div class="row justify-content-center align-self-center welcome">
-
-			<div style="width:100%">
-			<h4>ADMIN SIGNIN</h4>
+	<div class="auth-wrap">
+		<div class="auth-card">
+			<span class="eyebrow">ADMIN CONSOLE</span>
+			<h2>Signin to manage inventory.</h2>
+			<p class="support-copy">Maintain book records, quantities, and availability.</p>
 			{% if error %}
 				<div class="alert alert-danger">
 					{{error}}
@@ -31,9 +31,8 @@
 			    <input type="password" class="form-control" id="password" name="password" placeholder="Password">
 			  </div>
 
-			  <button type="submit" class="btn btn-primary">Signin</button>
+			  <button type="submit" class="btn btn-primary btn-block">Signin</button>
 			</form>
-			</div>
-	    </div>
+		</div>
 	</div>
 {% endblock %}
