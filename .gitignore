@@ -7,3 +7,12 @@ __*__
 venv/
 .venv/
 __pycache__/
+
+# Generated assignment/report artifacts
+LMS_*.docx
+LMS_*.md
+LMS_*.json
+reports/
+tests/generate_*.py
+tests/capture_ui_evidence.py
+~$*.docx
