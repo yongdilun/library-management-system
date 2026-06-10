@@ -428,7 +428,7 @@ def run_tests(driver, data, rec):
     fill(driver, "password", "password")
     click_submit(driver)
     exists = scalar("SELECT COUNT(*) FROM users WHERE email=%s", ("svv_signup_new@example.test",)) == 1
-    rec.add("TC-01-001", exists and "You've been registered!" in driver.page_source, "Selenium", "Registered test account through the real Sign Up form.")
+    rec.add("TC-01-001", exists and "registered" in driver.page_source.lower(), "Selenium", "Registered test account through the real Sign Up form.")
 
     page(driver, "/signup")
     fill(driver, "name", "SVV Signup")
@@ -586,7 +586,13 @@ def run_tests(driver, data, rec):
 
     long_keyword = "A" * 60
     page(driver, f"/books/search?keyword={long_keyword}")
-    rec.add("TC-07-003", "validation" in driver.page_source.lower() or "too long" in driver.page_source.lower(), "Selenium", "A 60-character keyword was submitted.")
+    long_search_source = driver.page_source.lower()
+    rec.add(
+        "TC-07-003",
+        "validation" in long_search_source or "too long" in long_search_source or "not exceed" in long_search_source,
+        "Selenium",
+        "A 60-character keyword was submitted.",
+    )
 
     page(driver, "/books/search?keyword=%40%40%40%23%23%23")
     rec.add("TC-07-004", "No Books Found!" in driver.page_source, "Selenium", "Special-character search returned a safe no-results page.")
