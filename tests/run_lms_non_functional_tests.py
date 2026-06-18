@@ -6,6 +6,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlparse, urlunparse
 
 import pymysql
 import requests
@@ -186,6 +187,51 @@ def record(case_id, passed, actual, evidence, tool):
     }
 
 
+def https_url_for(path):
+    parsed = urlparse(BASE_URL)
+    return urlunparse(parsed._replace(scheme="https", path=path, params="", query="", fragment=""))
+
+
+def compact_actual(row):
+    actual = row["actual"].replace("\n", " ")
+    case_id = row["test_case_id"]
+    if case_id == "TC-Q001":
+        return actual
+    if case_id == "TC-Q002":
+        return "Foreign keys missing or orphan reservation was accepted." if row["pass_fail"] == "Fail" else "Foreign keys enforced; orphan reservation rejected."
+    if case_id == "TC-Q003":
+        parts = [part.strip() for part in actual.split(";") if "Stored hashes" not in part]
+        return "; ".join(parts).strip()
+    if case_id == "TC-Q004":
+        return actual.split("; HTTPS error =")[0] + "."
+    return actual
+
+
+def print_console_report(summary, rows):
+    print()
+    print("LMS Non-Functional Requirement Tests")
+    print("=" * 80)
+    print(f"Base URL     : {BASE_URL}")
+    print(f"Result file  : {OUT_PATH}")
+    print(
+        "Summary      : "
+        f"{summary['pass']}/{summary['total']} passed, "
+        f"{summary['fail']} failed, "
+        f"{summary['not_executed']} not executed"
+    )
+    print()
+    print(f"{'Test Case':<10} {'Requirement':<10} {'Result':<6} Finding")
+    print("-" * 80)
+    for row in rows:
+        finding = compact_actual(row)
+        if len(finding) > 95:
+            finding = finding[:92] + "..."
+        print(f"{row['test_case_id']:<10} {row['requirement_id']:<10} {row['pass_fail']:<6} {finding}")
+    print()
+    print("Note         : Full evidence and raw values are saved in the JSON result file.")
+    print()
+
+
 def test_concurrent_reservation():
     cleanup()
     user_a = ensure_user("nfr_concurrent_a@example.test", "NFR Concurrent A")
@@ -258,7 +304,7 @@ def test_https_tls():
     https_available = True
     https_error = ""
     try:
-        requests.get("https://127.0.0.1:5000/signin", timeout=10, verify=False)
+        requests.get(https_url_for("/signin"), timeout=10, verify=False)
     except Exception as exc:
         https_available = False
         https_error = f"{type(exc).__name__}: {exc}"
@@ -304,9 +350,7 @@ def main():
         "summary": summary,
     }
     OUT_PATH.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
-    print(json.dumps(summary, indent=2))
-    for row in rows:
-        print(row["test_case_id"], row["pass_fail"], row["actual"])
+    print_console_report(summary, rows)
 
 
 if __name__ == "__main__":

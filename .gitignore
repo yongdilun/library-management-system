@@ -12,6 +12,8 @@ __pycache__/
 LMS_*.docx
 LMS_*.md
 LMS_*.json
+Report_*.docx
+Report_*.md
 reports/
 tests/generate_*.py
 tests/capture_ui_evidence.py

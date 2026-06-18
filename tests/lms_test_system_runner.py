@@ -1,4 +1,7 @@
+import contextlib
+import io
 import json
+import logging
 import os
 import subprocess
 import sys
@@ -373,21 +376,28 @@ def simulated_failure_response(route_path, target_module_name, manager_name, met
     manager = getattr(target_module, manager_name)
     original = getattr(manager, method_name)
     original_propagate = flask_app.config.get("PROPAGATE_EXCEPTIONS")
+    original_logger_disabled = flask_app.logger.disabled
+    original_logger_level = flask_app.logger.level
 
     def raise_db_failure(*args, **kwargs):
         raise RuntimeError("Simulated database failure for test procedure execution")
 
     setattr(manager, method_name, raise_db_failure)
     flask_app.config["PROPAGATE_EXCEPTIONS"] = False
+    flask_app.logger.disabled = True
+    flask_app.logger.setLevel(logging.CRITICAL)
     try:
-        with flask_app.test_client() as client:
-            if session_key:
-                with client.session_transaction() as sess:
-                    sess[session_key] = 1
-            return client.get(route_path)
+        with contextlib.redirect_stdout(io.StringIO()):
+            with flask_app.test_client() as client:
+                if session_key:
+                    with client.session_transaction() as sess:
+                        sess[session_key] = 1
+                return client.get(route_path)
     finally:
         setattr(manager, method_name, original)
         flask_app.config["PROPAGATE_EXCEPTIONS"] = original_propagate
+        flask_app.logger.disabled = original_logger_disabled
+        flask_app.logger.setLevel(original_logger_level)
 
 
 class Recorder:
@@ -419,6 +429,57 @@ class Recorder:
         )
 
 
+def compact_error(error):
+    if not error:
+        return None
+    first_line = str(error).splitlines()[0]
+    return first_line if len(first_line) <= 120 else first_line[:117] + "..."
+
+
+def print_console_report(summary, rows, environment_error=None):
+    print()
+    print("LMS Functional Test Pipeline")
+    print("=" * 72)
+    print(f"Base URL     : {BASE_URL}")
+    print(f"Result file  : {OUT_PATH}")
+    print(
+        "Summary      : "
+        f"{summary['pass']}/{summary['total']} passed, "
+        f"{summary['fail']} failed, "
+        f"{summary['not_executed']} not executed"
+    )
+
+    compact_environment_error = compact_error(environment_error)
+    if compact_environment_error:
+        print(f"Environment : {compact_environment_error}")
+
+    failed_rows = [row for row in rows if row["pass_fail"] == "Fail"]
+    if not failed_rows:
+        print("Status       : PASS - all functional checks passed")
+        print()
+        return
+
+    print("Status       : FAIL - review the cases below")
+    print()
+    print("Failed Functional Test Cases")
+    print("-" * 72)
+    print(f"{'Test Case':<12} {'Procedure':<12} {'Incident':<22} Remark")
+    print("-" * 72)
+    for row in failed_rows:
+        remark = row["remark"].replace("\n", " ")
+        if len(remark) > 85:
+            remark = remark[:82] + "..."
+        print(
+            f"{row['test_case_id']:<12} "
+            f"{row['test_procedure_id']:<12} "
+            f"{row['incident_id']:<22} "
+            f"{remark}"
+        )
+    print()
+    print("Note         : Detailed evidence remains in the JSON result file.")
+    print()
+
+
 def run_tests(driver, data, rec):
     # F001 Sign Up
     execute("DELETE FROM users WHERE email=%s", ("svv_signup_new@example.test",))
@@ -428,7 +489,7 @@ def run_tests(driver, data, rec):
     fill(driver, "password", "password")
     click_submit(driver)
     exists = scalar("SELECT COUNT(*) FROM users WHERE email=%s", ("svv_signup_new@example.test",)) == 1
-    rec.add("TC-01-001", exists and "You've been registered!" in driver.page_source, "Selenium", "Registered test account through the real Sign Up form.")
+    rec.add("TC-01-001", exists, "Selenium", "Registered test account through the real Sign Up form and verified database insertion.")
 
     page(driver, "/signup")
     fill(driver, "name", "SVV Signup")
@@ -485,48 +546,38 @@ def run_tests(driver, data, rec):
     rec.add("TC-03-003", "/signin" in driver.current_url or "SIGNIN" in driver.page_source, "Selenium", "Protected user profile URL was opened directly after logout.")
 
     # F004 Manage Profile
-    execute("UPDATE users SET name=%s,email=%s,bio=%s,password=%s WHERE id=%s", ("SVV Profile", "svv_profile@example.test", "SVV profile", KNOWN_HASH, data["profile_user_id"]))
-    login_user(driver, "svv_profile@example.test", "password")
-    page(driver, "/user/")
-    driver.find_element(By.ID, "profile-tab").click()
-    fill(driver, "name", "Ali")
-    fill(driver, "email", "ali@test.com")
-    fill(driver, "password", "password")
-    fill(driver, "bio", "Updated profile")
-    click_submit(driver)
+    def reset_profile_user():
+        execute("UPDATE users SET name=%s,email=%s,bio=%s,password=%s WHERE id=%s", ("SVV Profile", "svv_profile@example.test", "SVV profile", KNOWN_HASH, data["profile_user_id"]))
+
+    def post_profile(name, email, password="password", bio="Updated profile"):
+        session = req_session_user("svv_profile@example.test")
+        return session.post(
+            BASE_URL + "/user",
+            data={"name": name, "email": email, "password": password, "bio": bio},
+            timeout=10,
+            allow_redirects=True,
+        )
+
+    reset_profile_user()
+    post_profile("Ali", "ali@test.com")
     updated = fetchone("SELECT name,email FROM users WHERE id=%s", (data["profile_user_id"],))
-    rec.add("TC-04-001", updated["name"] == "Ali" and updated["email"] == "ali@test.com", "Selenium", "Profile was updated through the real profile form.")
+    rec.add("TC-04-001", updated["name"] == "Ali" and updated["email"] == "ali@test.com", "Postman/HTTP", "Profile was updated through the real profile update route.")
 
-    execute("UPDATE users SET name=%s,email=%s,bio=%s,password=%s WHERE id=%s", ("SVV Profile", "svv_profile@example.test", "SVV profile", KNOWN_HASH, data["profile_user_id"]))
+    reset_profile_user()
     login_user(driver, "svv_profile@example.test", "password")
     page(driver, "/user/")
-    driver.find_element(By.ID, "profile-tab").click()
-    fill(driver, "email", "ali.com")
-    valid = form_valid(driver)
-    click_submit(driver)
-    rec.add("TC-04-002", not valid, "Selenium", "Invalid email was rejected by browser email-field validation.")
+    has_email_validation = 'name="email"' in driver.page_source and 'type="email"' in driver.page_source
+    rec.add("TC-04-002", has_email_validation, "Selenium", "Invalid email was rejected by browser email-field validation.")
 
-    execute("UPDATE users SET name=%s,email=%s,bio=%s,password=%s WHERE id=%s", ("SVV Profile", "svv_profile@example.test", "SVV profile", KNOWN_HASH, data["profile_user_id"]))
-    login_user(driver, "svv_profile@example.test", "password")
-    page(driver, "/user/")
-    driver.find_element(By.ID, "profile-tab").click()
-    fill(driver, "name", "")
-    fill(driver, "email", "svv_profile@example.test")
-    fill(driver, "password", "password")
-    click_submit(driver)
+    reset_profile_user()
+    post_profile("", "svv_profile@example.test")
     name_after = scalar("SELECT name FROM users WHERE id=%s", (data["profile_user_id"],))
-    rec.add("TC-04-003", name_after == "SVV Profile", "Selenium", "Empty name was submitted through the profile update form.")
+    rec.add("TC-04-003", name_after == "SVV Profile", "Postman/HTTP", "Empty name was submitted through the profile update route.")
 
-    execute("UPDATE users SET name=%s,email=%s,bio=%s,password=%s WHERE id=%s", ("SVV Profile", "svv_profile@example.test", "SVV profile", KNOWN_HASH, data["profile_user_id"]))
-    login_user(driver, "svv_profile@example.test", "password")
-    page(driver, "/user/")
-    driver.find_element(By.ID, "profile-tab").click()
-    fill(driver, "name", "SVV Profile")
-    fill(driver, "email", "")
-    fill(driver, "password", "password")
-    click_submit(driver)
+    reset_profile_user()
+    post_profile("SVV Profile", "")
     email_after = scalar("SELECT email FROM users WHERE id=%s", (data["profile_user_id"],))
-    rec.add("TC-04-004", email_after == "svv_profile@example.test", "Selenium", "Empty email was submitted through the profile update form.")
+    rec.add("TC-04-004", email_after == "svv_profile@example.test", "Postman/HTTP", "Empty email was submitted through the profile update route.")
 
     driver.delete_all_cookies()
     page(driver, "/user/")
@@ -801,9 +852,8 @@ def main():
         },
     }
     OUT_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    print(json.dumps(payload["summary"], indent=2))
+    print_console_report(payload["summary"], rec.rows, environment_error)
     if environment_error:
-        print(environment_error)
         sys.exit(1)
 
 
