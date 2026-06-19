@@ -18,11 +18,11 @@ This repository provides the following documentation for the software maintenanc
 | Document | Purpose |
 |---|---|
 | `README.md` | Project overview, feature summary, setup summary, and branch information. |
-| `INSTALLATION_GUIDE.md` | Detailed local installation, database setup, and server startup instructions. |
-| `USER_GUIDE.md` | User and admin workflow guide for operating the LMS. |
-| `DEVELOPER_DOCUMENTATION.md` | Codebase structure, architecture notes, database overview, and maintenance changes. |
-| `TEST_DOCUMENTATION.md` | Test strategy, tools, commands, baseline results, improved results, and evidence files. |
-| `FAQ.md` | Common questions about setup, credentials, branches, testing, and known behavior. |
+| [`docs/INSTALLATION_GUIDE.md`](docs/INSTALLATION_GUIDE.md) | Detailed local installation, database setup, and server startup instructions. |
+| [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) | User and admin workflow guide for operating the LMS. |
+| [`docs/DEVELOPER_DOCUMENTATION.md`](docs/DEVELOPER_DOCUMENTATION.md) | Codebase structure, architecture notes, database overview, and maintenance changes. |
+| [`docs/TEST_DOCUMENTATION.md`](docs/TEST_DOCUMENTATION.md) | Test strategy, tools, commands, baseline results, improved results, and evidence files. |
+| [`docs/FAQ.md`](docs/FAQ.md) | Common questions about setup, credentials, branches, testing, and known behavior. |
 
 ## Key Features
 
