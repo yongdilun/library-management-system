@@ -4,6 +4,26 @@ A Flask and MySQL web application for managing library users, books, reservation
 
 ![Library Management App - Flask](https://github.com/hamzaavvan/library-management-system/blob/master/ss/ss2.JPG?raw=true)
 
+## Repository Information
+
+- Original repository: https://github.com/hamzaavvan/library-management-system
+- Assignment repository: https://github.com/yongdilun/library-management-system
+- Baseline and automated testing branch: `main`
+- Enhancement branch: `software-maintainability-assignment`
+
+## Project Documentation
+
+This repository provides the following documentation for the software maintenance assignment:
+
+| Document | Purpose |
+|---|---|
+| `README.md` | Project overview, feature summary, setup summary, and branch information. |
+| `INSTALLATION_GUIDE.md` | Detailed local installation, database setup, and server startup instructions. |
+| `USER_GUIDE.md` | User and admin workflow guide for operating the LMS. |
+| `DEVELOPER_DOCUMENTATION.md` | Codebase structure, architecture notes, database overview, and maintenance changes. |
+| `TEST_DOCUMENTATION.md` | Test strategy, tools, commands, baseline results, improved results, and evidence files. |
+| `FAQ.md` | Common questions about setup, credentials, branches, testing, and known behavior. |
+
 ## Key Features
 
 - User sign up, login, logout, and profile management.
