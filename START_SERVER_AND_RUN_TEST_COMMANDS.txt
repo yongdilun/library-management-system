@@ -1,0 +1,44 @@
+COPY AND PASTE COMMANDS FOR POWERSHELL
+
+============================================================
+MAIN - START SERVER COMMAND
+============================================================
+
+cd C:\Users\dilun\Documents\SVVAssigment\library-management-system-main
+python -m flask --app .\app.py run --host 127.0.0.1 --port 5001
+
+
+============================================================
+MAIN - RUN ALL TEST COMMANDS
+============================================================
+
+cd C:\Users\dilun\Documents\SVVAssigment\library-management-system-main
+$env:LMS_BASE_URL="http://127.0.0.1:5001"
+python tests\lms_test_system_runner.py
+python tests\run_lms_non_functional_tests.py
+
+
+============================================================
+BRANCH / IMPROVED - START SERVER COMMAND
+============================================================
+
+cd C:\Users\dilun\Documents\SVVAssigment\library-management-system
+python -m flask --app .\app.py run --host 127.0.0.1 --port 5000
+
+
+============================================================
+BRANCH / IMPROVED - RUN ALL TEST COMMANDS
+============================================================
+
+cd C:\Users\dilun\Documents\SVVAssigment\library-management-system
+$env:LMS_BASE_URL="http://127.0.0.1:5000"
+python tests\lms_test_system_runner.py
+python tests\run_lms_non_functional_tests.py
+
+
+NOTES
+1. Run the START SERVER COMMAND in one PowerShell window.
+2. Keep that server window open.
+3. Open a second PowerShell window and run the matching RUN ALL TEST COMMANDS.
+4. Main uses port 5001.
+5. Branch / improved uses port 5000.
